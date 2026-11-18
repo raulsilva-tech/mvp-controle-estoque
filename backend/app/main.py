@@ -10,6 +10,7 @@ from .models import Product, Movement
 from .schemas import LoginInput, TokenOutput, ProductCreate, ProductOutput, MovementCreate, MovementOutput, SummaryOutput
 from .security import create_access_token, get_current_user
 
+
 app = FastAPI(title="MVP Controle de Estoque", version="1.0.0")
 origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["GET", "POST"], allow_headers=["Authorization", "Content-Type"])
