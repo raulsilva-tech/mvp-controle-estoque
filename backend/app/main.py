@@ -25,7 +25,7 @@ def health():
 
 @app.post("/api/auth/login", response_model=TokenOutput)
 def login(data: LoginInput):
-    
+
     hasher = PasswordHash.recommended()
     # Verificação direta para o usuário inicial configurado por ambiente.
     # A senha é comparada usando hash Argon2, sem armazenar credenciais no banco.
@@ -42,6 +42,7 @@ def list_products(q: str = "", db: Session = Depends(get_db), user: str = Depend
     if q:
         stmt = stmt.where(Product.name.ilike(f"%{q}%") | Product.code.ilike(f"%{q}%"))
     return list(db.scalars(stmt.order_by(Product.name)).all())
+
 
 @app.post("/api/products", response_model=ProductOutput, status_code=201)
 def create_product(data: ProductCreate, db: Session = Depends(get_db), user: str = Depends(get_current_user)):
