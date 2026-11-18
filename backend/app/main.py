@@ -44,6 +44,7 @@ def list_products(q: str = "", db: Session = Depends(get_db), user: str = Depend
     return list(db.scalars(stmt.order_by(Product.name)).all())
 
 
+
 @app.post("/api/products", response_model=ProductOutput, status_code=201)
 def create_product(data: ProductCreate, db: Session = Depends(get_db), user: str = Depends(get_current_user)):
     product = Product(**data.model_dump())

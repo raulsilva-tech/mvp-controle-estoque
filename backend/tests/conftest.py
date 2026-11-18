@@ -5,6 +5,7 @@ os.environ["ADMIN_USERNAME"] = "admin"
 os.environ["ADMIN_PASSWORD"] = "test-password"
 os.environ["CORS_ORIGINS"] = "http://localhost:4200"
 
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
