@@ -36,6 +36,7 @@ def login(data: LoginInput):
         raise HTTPException(status_code=401, detail="Usuário ou senha inválidos.")
     return TokenOutput(access_token=create_access_token(data.username))
 
+
 @app.get("/api/products", response_model=list[ProductOutput])
 def list_products(q: str = "", db: Session = Depends(get_db), user: str = Depends(get_current_user)):
     stmt = select(Product).where(Product.active.is_(True))
