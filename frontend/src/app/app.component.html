@@ -1,0 +1,90 @@
+<div class="shell">
+  <aside class="sidebar" *ngIf="page!=='login'">
+    <h1>Boa Compra</h1><small>CONTROLE DE ESTOQUE</small>
+    <nav aria-label="Menu principal">
+      <button (click)="page='home';load()">⌂ Início</button>
+      <button (click)="page='products'">＋ Cadastrar produto</button>
+      <button (click)="page='products'">▤ Consultar estoque</button>
+      <button class="primary-nav" (click)="openMovement()">⇄ Movimentar estoque</button>
+    </nav>
+    <button class="logout" (click)="logout()">Sair</button>
+  </aside>
+
+  <main>
+    <section *ngIf="page==='login'" class="login card">
+      <h1>Boa Compra</h1><p>Entre para controlar o estoque.</p>
+      <form (ngSubmit)="login()">
+        <label for="username">Usuário</label><input id="username" name="username" [(ngModel)]="username" required autocomplete="username">
+        <label for="password">Senha</label><input id="password" name="password" type="password" [(ngModel)]="password" required autocomplete="current-password">
+        <button class="primary" type="submit">Entrar</button>
+      </form><p class="error" role="alert" *ngIf="error">{{error}}</p>
+      <small>Desenvolvimento: credenciais configuradas no arquivo .env.</small>
+    </section>
+
+    <ng-container *ngIf="page!=='login'">
+      <header><div><h2>{{page==='home'?'Visão geral':page==='movement'?'Movimentar estoque':page==='results'?'Resultado da movimentação':'Produtos'}}</h2>
+      <p>Acompanhe seus produtos e movimentações de estoque.</p></div></header>
+      <p class="error" role="alert" *ngIf="error">{{error}}</p>
+      <section *ngIf="page==='home'" class="content">
+        <div class="stats">
+          <article class="card"><span>Produtos cadastrados</span><strong>{{summary.products_count}}</strong></article>
+          <article class="card"><span>Produtos com estoque baixo</span><strong>{{summary.low_stock_count}}</strong></article>
+        </div>
+        <section class="card"><h3>Ações rápidas</h3><div class="actions">
+          <button (click)="page='products'">Cadastrar / consultar produtos</button>
+          <button class="primary" (click)="openMovement()">Movimentar estoque</button>
+        </div></section>
+        <section class="card"><h3>Atenção ao estoque</h3><p *ngFor="let p of lowStock()">⚠ Repor — {{p.name}}: {{p.quantity}} un. (mínimo {{p.minimum_stock}})</p></section>
+      </section>
+
+      <section *ngIf="page==='movement'" class="card content">
+        <h3>Nova movimentação</h3><p>Preencha os campos para atualizar o saldo do produto.</p>
+        <form (ngSubmit)="submitMovement()">
+          <label for="product">Produto *</label>
+          <select id="product" name="product" [(ngModel)]="selectedProductId" required>
+            <option [ngValue]="0">Selecione um produto</option><option *ngFor="let p of products" [ngValue]="p.id">{{p.name}} — {{p.code}} ({{p.quantity}} un.)</option>
+          </select>
+          <fieldset><legend>Tipo de movimentação *</legend>
+            <label><input type="radio" name="type" value="ENTRADA" [(ngModel)]="movementType"> Entrada</label>
+            <label><input type="radio" name="type" value="SAIDA" [(ngModel)]="movementType"> Saída</label>
+          </fieldset>
+          <label for="quantity">Quantidade *</label><input id="quantity" name="quantity" type="number" min="1" step="1" [(ngModel)]="quantity" required>
+          <p *ngIf="selectedProduct">Estoque atual: <strong>{{selectedProduct.quantity}} unidades</strong></p>
+          <label for="note">Observação (opcional)</label><textarea id="note" name="note" [(ngModel)]="note" maxlength="250"></textarea>
+          <p class="hint">A quantidade deve ser maior que zero. Saídas não podem superar o estoque disponível.</p>
+          <div class="actions"><button type="button" (click)="page='home'">Cancelar</button><button class="primary" type="submit">Confirmar movimentação</button></div>
+        </form>
+      </section>
+
+      <section *ngIf="page==='results'" class="content">
+        <div class="success card" role="status">✓ {{success}}</div>
+        <section class="card"><h3>Estoque atualizado</h3>
+          <p *ngIf="selectedProduct"><strong>{{selectedProduct.name}}</strong> — {{selectedProduct.code}}</p>
+          <p *ngIf="lastMovement">Movimentação: {{lastMovement.type}} de {{lastMovement.quantity}} unidade(s).</p>
+          <p *ngIf="selectedProduct">Saldo atual: <strong>{{selectedProduct.quantity}} unidades</strong></p>
+        </section>
+        <section class="card"><h3>Produtos que precisam de reposição</h3>
+          <p *ngFor="let p of lowStock()">⚠ Repor — {{p.name}}: {{p.quantity}} un.; mínimo {{p.minimum_stock}}.</p>
+          <p *ngIf="lowStock().length===0">✓ Nenhum produto abaixo do estoque mínimo.</p>
+        </section>
+        <div class="actions"><button (click)="page='home'">Voltar ao menu</button><button class="primary" (click)="openMovement()">Nova movimentação</button></div>
+      </section>
+
+      <section *ngIf="page==='products'" class="content">
+        <section class="card">
+          <h3>Cadastrar produto</h3>
+          <form (ngSubmit)="createProduct()">
+            <label for="new-code">Código *</label><input id="new-code" name="new-code" [(ngModel)]="newProduct.code" maxlength="30" required>
+            <label for="new-name">Nome do produto *</label><input id="new-name" name="new-name" [(ngModel)]="newProduct.name" maxlength="150" required>
+            <label for="new-category">Categoria</label><input id="new-category" name="new-category" [(ngModel)]="newProduct.category" maxlength="80">
+            <label for="new-quantity">Quantidade inicial</label><input id="new-quantity" name="new-quantity" type="number" min="0" [(ngModel)]="newProduct.quantity">
+            <label for="new-minimum">Estoque mínimo</label><input id="new-minimum" name="new-minimum" type="number" min="0" [(ngModel)]="newProduct.minimum_stock">
+            <div class="actions"><button class="primary" type="submit">Salvar produto</button><button type="button" (click)="page='home'">Voltar ao menu</button></div>
+          </form>
+        </section>
+        <section class="card"><h3>Produtos cadastrados</h3><p *ngFor="let p of products">{{p.code}} — {{p.name}} — {{p.quantity}} un. (mínimo {{p.minimum_stock}})</p>
+        <p *ngIf="products.length===0">Nenhum produto cadastrado.</p></section>
+      </section>
+    </ng-container>
+  </main>
+</div>
