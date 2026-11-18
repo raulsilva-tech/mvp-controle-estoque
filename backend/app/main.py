@@ -25,6 +25,7 @@ def health():
 
 @app.post("/api/auth/login", response_model=TokenOutput)
 def login(data: LoginInput):
+    
     hasher = PasswordHash.recommended()
     # Verificação direta para o usuário inicial configurado por ambiente.
     # A senha é comparada usando hash Argon2, sem armazenar credenciais no banco.
