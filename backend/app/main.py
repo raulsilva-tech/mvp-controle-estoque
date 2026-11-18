@@ -56,6 +56,7 @@ def create_product(data: ProductCreate, db: Session = Depends(get_db), user: str
         db.rollback()
         raise HTTPException(status_code=409, detail="Já existe um produto com esse código.")
 
+
 @app.post("/api/movements", response_model=MovementOutput, status_code=201)
 def create_movement(data: MovementCreate, db: Session = Depends(get_db), user: str = Depends(get_current_user)):
     product = db.scalar(select(Product).where(Product.id == data.product_id, Product.active.is_(True)).with_for_update())
